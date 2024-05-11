@@ -2,6 +2,8 @@
 \usepackage{lmodern}
 \usepackage{graphicx}
 \usepackage[margin=2.5cm]{geometry}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
 
 \graphicspath{{images/}}
 \setcounter{page}{0}
@@ -9,6 +11,25 @@
 \setlength{\parskip}{0.8em}
 
 \renewcommand{\baselinestretch}{1.15}
+
+\fancypagestyle{header}{
+    \fancyhf{}
+    \setlength{\headheight}{25.94447pt}
+    \fancyhead[L]{Jari Valentine}
+    \fancyhead[R]{academic year 2023-2024}
+
+    \renewcommand{\headrule}{
+        \colorbox{gray!30}{\parbox{0.98749\linewidth}{\centering\textbf{Real-time Collaboration in Web Applications}}}
+    }
+
+    \fancyfoot{}
+    \setlength{\footskip}{14.49998pt}
+    \fancyfoot[R]{\thepage}
+
+    \renewcommand{\headrulewidth}{0pt}
+}
+\pagestyle{header}
+
 
 \begin{document}
 
