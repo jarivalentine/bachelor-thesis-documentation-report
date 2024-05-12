@@ -1,3 +1,80 @@
 \newpage
 
+% TODO: Library or framework? Consistent use of the terms and/or define they will be used interchangeably, the difference is not in the scope of this research?
+
 \subsection{Choosing a library or framework}
+
+The next step is deciding what framework or library to work with when using WebSockets or Server-Sent Events. These technologies are language agnostic thus making choosing a framework also come down to what language you will be working with. Eventually choosing a framework comes down to some trade offs and most of the time this means choosing between having to implement a feature yourself and having to accept a layer of abstraction to not implement a feature.
+
+\textbf{Methodologies:} Literature review, comparative analysis
+
+\subsubsection{Programming language}
+
+In a general scope the client side of a web application will be JavaScript but the backend language could be anything. Choosing a language for a real-time API is a hard choice to make that takes a lot into account but eventually choosing a framework is in each language the same process. A good list of possible frameworks and libraries should be analysed and compared to choose what fits best to the project's needs.
+
+Because in web applications the client side is generally JavaScript/TypeScript there are a lot of WebSocket server library options in JS/TS that offer a layer of abstraction that works together with a JS/TS client.
+
+On the other hand it makes sense to look into other languages for a WebSocket server. Because performance is important in real-time communication a language like Rust makes the most sense, this is supported by Figma's choice (see Apendix A). But this type of performance will only be noticeable when talking about real-time functionality that takes on a number of events like for example Figma does. Figma started its WebSocket server in TypeScript until big files started to experience lag in real-time they had to make the switch to Rust.
+
+\textbf{Business perspective}
+
+With Teamleader it makes sense to look into TypeScript as a language because of the business perspective. Teamleader already has developers that write TS code in the frontend so for this research a feature analysis on WebSocket frameworks in TS makes sense. Also because Teamleader's product is not going to have to need performance like Figma on its real-time features. Figma needs constant and instant real-time events being sent while adding collaborative features to a business tool comes down to having data updates in real-time (e.g. a deal gets moved to done on a status board).
+
+TypeScript also just makes sense in today's timeline for WebSockets. The libraries with a lot of built in features come with a client out of the box that sometimes even has to be used.
+
+\subsubsection{TypeScript libraries and frameworks}
+
+Before starting a comparative analysis a list of concepts and features that have to be compared should be defined. This can range from build-in features, like if the framework has a polyfill/fallback to polling if WebSockets don't work (in some cases intermediaries can block the WebSocket protocol), to how the ease of use is.
+
+Features:
+
+\begin{enumerate}
+  \item Reliable: does the framework have a fallback to long-polling if the WebSocket connection doesn't work?
+  \item Middleware: does the framework have a way to add middleware for authentication?
+  \item Auto-reconnection: does the framework have an auto-reconnecting mechanism?
+  \item Namespacing: does the framework have a way to namespace connections?
+  \item Scalability: what does the framework have to offer to ease scalability?
+\end{enumerate}
+
+Additional:
+
+\begin{enumerate}
+  \item Community: what kind of community support is there?
+  \item Active development: is the framework still being worked on?
+  \item Performance: how the performance is received based on literature review
+  \item Ease of use: what is the learning curve of the framework in comparison with the others, does it have good documentation?
+\end{enumerate}
+
+\textit{insert table here}
+
+\textit{conclude results}
+
+\subsubsection{Abstraction layer}
+
+The more features a framework has the less the developer has to implement themselves. The main frameworks that offer a lot of features are very much alike: Socket.io and SocketCluster offer the most but this comes at some kind of cost. The layer of abstraction these frameworks add limits how you can work with them. Because of the way they work with the WebSocket protocol you cannot send events from a different server for example. These frameworks require you to use the client side package they offer in JavaScript or TypeScript. While sometimes there are community projects providing a client for let's say PHP, it is not a real option to develop using these projects because of the lack of active development.
+
+The other choice would be using native WebSocket client side with any kind of package on the server that doesn't add a layer of abstraction. Server side in this case the main library would be 'ws'. The important takeaway is that this side of the trade off enables you to send events from let's say a PHP server, but of course the real question is: do you need to be able to do that?
+
+Eventually the concern of not being able to have a client in other languages is not an issue in real-time communication. The client and WebSocket server needs to communicate using WebSockets but when you want to communicate to the WebSocket server from a different server this doesn't need to happen using a persistent connection. Other technologies can easily be implemented or even adding HTTP endpoints to the server.
+
+The real problem that is left when choosing SocketCluster or Socket.io is that it might add unnecessary abstraction building their own protocol over WebSockets with features a project might not need. These features can be useful but may add unnecessary overhead.
+
+\textbf{SocketCluster vs Socket.io}
+
+While there is critique on these technologies as mentioned before, they still offer the most features so when the decision is made to choose an abstraction and losing control is not an issue, which abstraction should be considered?
+
+\textit{insert table here}
+
+SocketCluster offers a more advanced solution with features specially for large projects like the attention to scaling. In contrast Socket.io is generally known as an easier setup for smaller projects. Socket.io has a very easy learning curve and can get alot done, it has a very large community and generally known as the go to library to implement real-time.
+
+% SocketCluster should be considered when?
+
+% Performance testing both?
+
+% Outside of Node.js?
+
+\subsubsection{Server-Sent Events}
+
+\textbf{Mercure}
+
+\subsubsection{Conclusion}
