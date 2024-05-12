@@ -2,3 +2,43 @@
 
 \section*{Appendices}
 \addcontentsline{toc}{section}{Appendices}
+
+\subsection*{Appendix A: Case Study Figma}
+\addcontentsline{toc}{subsection}{Appendix A: Case study Figma}
+
+In today's digital landscape, real-time collaboration has become a cornerstone of productivity and innovation, revolutionising the way teams work together on projects. Figma, a leading design tool, exemplifies the power and potential of real-time communication technologies such as WebSockets. This case study delves into Figma's innovative use of WebSockets to facilitate seamless collaboration. By exploring Figma's approach to real-time communication, this study can gain valuable insights into how WebSockets can be leveraged to enhance collaboration in diverse applications and industries.
+
+\subsubsection*{Operational Transformation (OT)}
+
+OT is a technique for resolving a wide variety of conflicts in collaborative editing systems, including read-write conflict, merge conflicts and write-write conflict. It works by transforming the operations of one user to make them compatible with operations of another user. This allows users to work on the same document simultaneously without causing any conflict. \cite{ot}
+
+Operational Transformation gained popularity through Google Docs \cite{figma-rtc}, enabling its real-time text editor to function seamlessly. This area is extensive, involving complex algorithms and significant research. However, to maintain focus on more fundamental collaborative features, this research will not delve into real-time text editing, despite its significance in collaborative systems like Google Docs.
+
+\subsubsection*{Figma's context}
+
+Figma was the first design tool to introduce real-time collaboration features. Their features eliminate the need to export, sync or email copies of files and allows more people to take part in the design process. While we use these tools everyday note that there still aren't many public case studies on these systems. But Figma decided to share how they did it in the hopes of helping others.
+
+Figma doesn't use OT because it was unnecessarily complex for their use and they had the ability to develop their own solution. Figma's setup contains a client/server architecture with communication over WebSockets. Their servers spin a process for each document which everyone editing connects to. \cite{figma-rtc}
+
+The server is written in Rust which dramatically improves the performance of huge design files in the tool. Rust combines high speed with low resource usage while still offering safety. Given the scale of Figma and its heavy reliance on real-time collaboration, prioritising low resource usage became important. This emerged particularly as their previous TypeScript server encountered issues. It's worth noting that while performance at this scale is critical for complex applications like Figma, simpler collaborative tools such as status boards may not require such extensive resource management. \cite{figma-rust}
+
+Figma's flow:
+
+\begin{enumerate}
+  \item Document open: client downloads a copy of the document from stored in their document system.
+  \item Document updates: to that document are synced over the WebSocket.
+  \item Going offline and back online: the client applies offline edits to a fresh copy
+  \item More sycning: comments, users, teams, projects stored in postgres
+\end{enumerate}
+
+\subsubsection*{Conflict-free Replicated Data Types (CRDTs)}
+
+\subsubsection*{Figma's document structure}
+
+\subsubsection*{Syncing object properties}
+
+\subsubsection*{Syncing object hierarchy}
+
+\subsubsection*{Implementing undo}
+
+\subsubsection*{Conclusing}
