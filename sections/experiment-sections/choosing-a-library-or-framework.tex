@@ -1,57 +1,85 @@
 \newpage
 
-% TODO: Library or framework? Consistent use of the terms and/or define they will be used interchangeably, the difference is not in the scope of this research?
+\subsection{Choosing a library}
 
-\subsection{Choosing a library or framework}
-
-The next step is deciding what framework or library to work with when using WebSockets or Server-Sent Events. These technologies are language agnostic thus making choosing a framework also come down to what language you will be working with. Eventually choosing a framework comes down to some trade offs and most of the time this means choosing between having to implement a feature yourself and having to accept a layer of abstraction to not implement a feature.
+The next step is deciding what library to work with when using WebSockets or Server-Sent Events. These technologies are language agnostic thus making choosing a library also come down to what language you will be working with. Eventually choosing consists of some trade offs and most of the time this means choosing between having to implement a feature yourself or having to accept a layer of abstraction to not implement a feature.
 
 \textbf{Methodologies:} Literature review, comparative analysis
 
 \subsubsection{Programming language}
 
-In a general scope the client side of a web application will be JavaScript but the backend language could be anything. Choosing a language for a real-time API is a hard choice to make that takes a lot into account but eventually choosing a framework is in each language the same process. A good list of possible frameworks and libraries should be analysed and compared to choose what fits best to the project's needs.
+In a general scope the client side of a web application will be JavaScript but the backend language could be anything. Choosing a language for a real-time API is a hard choice to make that takes a lot into account but eventually choosing a library is in each language the same process. A good list of possible libraries should be analysed and compared to choose what fits best to the project's needs.
 
-Because in web applications the client side is generally JavaScript/TypeScript there are a lot of WebSocket server library options in JS/TS that offer a layer of abstraction that works together with a JS/TS client.
+It makes sense to also look into JS/TS for the backend because it is already used in the frontend. There are a lot of WebSocket server library options in Node.js that offer alot of features. These libraries with alot of features work togheter with a client library that needs to be used because they add a layer of abstraction.
 
 On the other hand it makes sense to look into other languages for a WebSocket server. Because performance is important in real-time communication a language like Rust makes the most sense, this is supported by Figma's choice (see Apendix A). But this type of performance will only be noticeable when talking about real-time functionality that takes on a number of events like for example Figma does. Figma started its WebSocket server in TypeScript until big files started to experience lag in real-time they had to make the switch to Rust.
 
 \textbf{Business perspective}
 
-With Teamleader it makes sense to look into TypeScript as a language because of the business perspective. Teamleader already has developers that write TS code in the frontend so for this research a feature analysis on WebSocket frameworks in TS makes sense. Also because Teamleader's product is not going to have to need performance like Figma on its real-time features. Figma needs constant and instant real-time events being sent while adding collaborative features to a business tool comes down to having data updates in real-time (e.g. a deal gets moved to done on a status board).
+With Teamleader it makes sense to look into TypeScript as a language because of the business perspective. Teamleader already has developers that write TS code in the frontend so for this research a feature analysis on WebSocket libraries in TS makes sense. Also because Teamleader's product is not going to need performance like Figma on its real-time features. Figma needs constant and instant real-time events being sent as a multiplayer collaboration tool while adding collaborative features to a business tool comes down to having data updates in real-time (e.g. a deal gets moved to done on a status board).
 
-TypeScript also just makes sense in today's timeline for WebSockets. The libraries with a lot of built in features come with a client out of the box that sometimes even has to be used.
+\subsubsection{Node.js libraries for WebSockets}
 
-\subsubsection{TypeScript libraries and frameworks}
-
-Before starting a comparative analysis a list of concepts and features that have to be compared should be defined. This can range from build-in features, like if the framework has a polyfill/fallback to polling if WebSockets don't work (in some cases intermediaries can block the WebSocket protocol), to how the ease of use is.
+Before starting a comparative analysis a list  features that have to be compared should be defined. Additionally it's also good to look at some other concepts like how it is percieved in the community to if the library is actively being maintained.
 
 Features:
 
 \begin{enumerate}
-  \item Reliable: does the framework have a fallback to long-polling if the WebSocket connection doesn't work?
-  \item Middleware: does the framework have a way to add middleware for authentication?
-  \item Auto-reconnection: does the framework have an auto-reconnecting mechanism?
-  \item Namespacing: does the framework have a way to namespace connections?
-  \item Scalability: what does the framework have to offer to ease scalability?
+  \item Fallback: does the library have a fallback (or a polyfill) to long-polling if the WebSocket connection doesn't work?
+  \item Authentication: does the library have middleware and authentication features?
+  \item Auto-reconnection: does the library have an auto-reconnecting mechanism?
+  \item Pub/Sub: does the library have an implementation of the Pub/Sub mechanism?
+  \item Scalability: does the library have a build-in way to scale?
 \end{enumerate}
 
 Additional:
 
 \begin{enumerate}
   \item Community: what kind of community support is there?
-  \item Active development: is the framework still being worked on?
-  \item Performance: how the performance is received based on literature review
-  \item Ease of use: what is the learning curve of the framework in comparison with the others, does it have good documentation?
+  \item Active development: is the library still being worked on?
+  \item Performance: how is the performance?
+  \item Ease of use: what is the learning curve of the library in comparison with the others, does it have good documentation?
 \end{enumerate}
 
-\textit{insert table here}
+\begin{table}[h]
+  \centering
+  \begin{tabular}{|c|c|c|c|c|c|c|}
+    \hline
+                    & Fallback            & Authentication      & Reconnection        & Pub/Sub             & Scalability         \\ \hline
+    Socket.IO       & Yes                 & Yes                 & Yes                 & Yes                 & Yes                 \\ \hline
+    SocketCluster   & \textcolor{red}{No} & Yes                 & Yes                 & Yes                 & Yes                 \\ \hline
+    ws              & \textcolor{red}{No} & \textcolor{red}{No} & \textcolor{red}{No} & \textcolor{red}{No} & \textcolor{red}{No} \\ \hline
+    uWebSockets     & \textcolor{red}{No} & \textcolor{red}{No} & \textcolor{red}{No} & \textcolor{red}{No} & \textcolor{red}{No} \\ \hline
+    WebSockets-Node & \textcolor{red}{No} & \textcolor{red}{No} & \textcolor{red}{No} & \textcolor{red}{No} & \textcolor{red}{No} \\ \hline
+    SockJS          & Yes                 & \textcolor{red}{No} & \textcolor{red}{No} & \textcolor{red}{No} & \textcolor{red}{No} \\ \hline
+    Sockette        & Yes                 & \textcolor{red}{No} & \textcolor{red}{No} & \textcolor{red}{No} & \textcolor{red}{No} \\ \hline
+    Faye            & \textcolor{red}{No} & Yes                 & \textcolor{red}{No} & Yes                 & \textcolor{red}{No} \\ \hline
+  \end{tabular}
+  \caption{Library feature comparision}
+\end{table}
 
-\textit{conclude results}
+\begin{table}[h]
+  \centering
+  \begin{tabular}{|c|c|c|c|c|c|c|}
+    \hline
+                   & Community  & Active development       & Performance & Ease of use \\ \hline
+    Socket.IO      & Go-To      & Yes                      & Overhead    & Simple      \\ \hline
+    SocketCluster  & Limited    & Yes                      & Overhead    & Hard        \\ \hline
+    ws             & Go-To      & Yes                      & High        & Simple      \\ \hline
+    uWebSockets    & Limited    & Yes                      & High        & Medium      \\ \hline
+    WebSocket-Node & Limited    & Yes                      & High        & Simple      \\ \hline
+    SockJS         & Well known & \textcolor{red}{2 years} & Medium      & Simple      \\ \hline
+    Sockette       & Limited    & \textcolor{red}{5 years} & High        & Simple      \\ \hline
+    Faye           & Limited    & \textcolor{red}{4 years} & High        & Simple      \\ \hline
+  \end{tabular}
+  \caption{Library additional comparison}
+\end{table}
+
+These results show that there are 2 main libraries that offer the most features: SocketCluster and Socket.io. When looking for a library that has less features and is easier to use the best choice would be 'ws'. This is because of how the other libraries are not actively being maintained or have a very limited community. The other libraries are not really an option because of the lack of features and can't compete with the main libraries.
 
 \subsubsection{Abstraction layer}
 
-The more features a framework has the less the developer has to implement themselves. The main frameworks that offer a lot of features are very much alike: Socket.io and SocketCluster offer the most but this comes at some kind of cost. The layer of abstraction these frameworks add limits how you can work with them. Because of the way they work with the WebSocket protocol you cannot send events from a different server for example. These frameworks require you to use the client side package they offer in JavaScript or TypeScript. While sometimes there are community projects providing a client for let's say PHP, it is not a real option to develop using these projects because of the lack of active development.
+The more features a library has the less the developer has to implement themselves. The main libraries that offer a lot of features are very much alike: Socket.io and SocketCluster offer the most but this comes at some kind of cost. The layer of abstraction these libraries add limits how you can work with them. Because of the way they work with the WebSocket protocol you cannot send events from a different server for example. These libraryies require you to use the client side package they offer in JavaScript or TypeScript. While sometimes there are community projects providing a client for let's say PHP, it is not a real option to develop using these projects because of the lack of active development.
 
 The other choice would be using native WebSocket client side with any kind of package on the server that doesn't add a layer of abstraction. Server side in this case the main library would be 'ws'. The important takeaway is that this side of the trade off enables you to send events from let's say a PHP server, but of course the real question is: do you need to be able to do that?
 
@@ -63,15 +91,7 @@ The real problem that is left when choosing SocketCluster or Socket.io is that i
 
 While there is critique on these technologies as mentioned before, they still offer the most features so when the decision is made to choose an abstraction and losing control is not an issue, which abstraction should be considered?
 
-\textit{insert table here}
-
 SocketCluster offers a more advanced solution with features specially for large projects like the attention to scaling. In contrast Socket.io is generally known as an easier setup for smaller projects. Socket.io has a very easy learning curve and can get alot done, it has a very large community and generally known as the go to library to implement real-time.
-
-% SocketCluster should be considered when?
-
-% Performance testing both?
-
-% Outside of Node.js?
 
 \subsubsection{Server-Sent Events}
 

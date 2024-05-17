@@ -1,6 +1,6 @@
 \subsection{Fundamentals of real-time technologies}
 
-Before exploring various frameworks and strategies for implementing real-time communication in web applications, it's essential to establish a foundational understanding of real-time technologies. This understanding ensures that a developer is ready to navigate the complexities of real-time communication effectively. By gaining insight into these fundamental concepts, one can make informed decisions, troubleshoot issues, and optimise performance when integrating real-time features into your applications.
+Before exploring various frameworks and strategies for implementing real-time communication in web applications, it's essential to establish a foundational understanding of real-time technologies. This understanding ensures that a developer is ready to navigate the complexities of real-time communication effectively. By gaining insight into these fundamental concepts, one can make informed decisions, troubleshoot issues, and optimise performance when integrating real-time features into applications.
 
 \textbf{Methodologies:} Literature review, case studies
 
@@ -27,7 +27,7 @@ This study will already narrow down our focus to WebSockets, WebTransport, and S
 
 WebSockets, known for their bidirectional communication capabilities, are widely supported across browsers and standardised through the RFC 6455 specification. Similarly, Server-Sent Events offer a simple and efficient method for server-to-client communication, particularly suited for scenarios where one-way data flow suffices.
 
-WebTransport, while still emerging, shows promise as a next-generation transport protocol for the web, offering improved performance and efficiency over traditional TCP-based protocols.
+WebTransport, while still emerging, shows promise as a next-generation transport protocol for the web, offering improved performance and efficiency over the TCP-based WebSocket protocol.
 
 Conversely, exclusion of gRPC, WebRTC and GraphQL from the research focus is due to their specialised use cases and setup requirements, which may not align with the general scope of this study. gRPC is certainly well-suited for applications that already utilise the Remote Procedure Call (RPC) paradigm. However, for web applications focusing on real-time collaborative features, the complexity of implementing and configuring gRPC may outweigh its benefits, especially when compared to more straightforward alternatives like WebSockets or Server-Sent Events.
 
@@ -61,7 +61,7 @@ In addition to WebSocket, Server-Sent Events (SSE) also play a crucial role in f
 
 \textbf{Emeging solutions}
 
-While WebSockets have become a foundational technologie for real-time communication on the web, WebTransport aims to enhance web applications further. Offering features like multiplexing and congestion control, WebTransport is still in its experimental stage and not yet widely adopted \cite{mdn-wt}. Despite this, the evolution of real-time web communication continues to be driven by technological advancements and developer needs. As the internet evolves, real-time communication remains crucial, with WebTransport promising future advancements.
+While WebSockets have become a foundational technologie for real-time communication on the web, WebTransport aims to enhance web applications further. Offering a solutions to the head-of-line blocking issue and better performance, WebTransport is still in its experimental stage and not yet widely adopted \cite{mdn-wt}. Despite this, the evolution of real-time web communication continues to be driven by technological advancements and developer needs.
 
 \subsubsection{WebSocket fundamentals}
 
@@ -77,12 +77,18 @@ It's designed to provide a responsive user experience by maintaining that open c
   \item Closing a connection: \\ The connection can be terminated by either client or server by initiating a closing handshake.
 \end{enumerate}
 
+\begin{figure}[h]
+  \caption{WebSocket connection diagram}
+  \includegraphics[width=0.8\linewidth]{websocket_diagram}
+  \centering
+\end{figure}
+
 \textbf{Opening handshake}
 
 The opening of a connection is intended to be compatible with HTTP-based architectures so that a single port can be used. This makes it possible that both HTTP clients and WebSocket clients can talk to the same server on the same port. \cite{ws-rfc}
 
 The HTTP request in request-line format and in compliance with HTTP:
-\begin{verbatim}
+\begin{lstlisting}[caption=WebSocket opening handshake HTTP GET Upgrade request, style=nohighlight]
   GET /request-uri HTTP/1.1 
   Host: server.example.com 
   Upgrade: websocket Connection: Upgrade 
@@ -90,7 +96,7 @@ The HTTP request in request-line format and in compliance with HTTP:
   Origin: http://example.com 
   Sec-WebSocket-Protocol: chat, superchat 
   Sec-WebSocket-Version: 13  
-\end{verbatim}
+\end{lstlisting}
 
 \begin{itemize}
   \item request-uri:  to identify the endpoint to allow multiple WebSockets to be served by a single server.
@@ -98,13 +104,13 @@ The HTTP request in request-line format and in compliance with HTTP:
 \end{itemize}
 
 The server needs to prove to the client that it received the request:
-\begin{verbatim}
+\begin{lstlisting}[caption=WebSocket opening handshake server response, style=nohighlight]
   HTTP/1.1 101 Switching Protocols
   Upgrade: websocket
   Connection: Upgrade
   Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=
   Sec-WebSocket-Protocol: chat
-\end{verbatim}
+\end{lstlisting}
 
 \begin{itemize}
   \item Sec-Websocket-Accept: a key + GUID hashed and encoded to provide proof.
@@ -125,26 +131,26 @@ After a successful handshake data transfer is possible in conceptual units refer
   \item The frames are reassembled into a complete message at the receiving end by position information contained in each frame
 \end{enumerate}
 
-\begin{verbatim}
-    0                   1                   2                   3
-    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-  +-+-+-+-+-------+-+-------------+-------------------------------+
-  |F|R|R|R| opcode|M| Payload len |    Extended payload length    |
-  |I|S|S|S|  (4)  |A|     (7)     |             (16/64)           |
-  |N|V|V|V|       |S|             |   (if payload len==126/127)   |
-  | |1|2|3|       |K|             |                               |
-  +-+-+-+-+-------+-+-------------+ - - - - - - - - - - - - - - - +
-  |     Extended payload length continued, if payload len == 127  |
-  + - - - - - - - - - - - - - - - +-------------------------------+
-  |                               |Masking-key, if MASK set to 1  |
-  +-------------------------------+-------------------------------+
-  | Masking-key (continued)       |          Payload Data         |
-  +-------------------------------- - - - - - - - - - - - - - - - +
-  :                     Payload Data continued ...                :
-  + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
-  |                     Payload Data continued ...                |
-  +---------------------------------------------------------------+
-\end{verbatim}
+\begin{lstlisting}[caption=Frame format, style=nohighlight]
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-------+-+-------------+-------------------------------+
+|F|R|R|R| opcode|M| Payload len |    Extended payload length    |
+|I|S|S|S|  (4)  |A|     (7)     |             (16/64)           |
+|N|V|V|V|       |S|             |   (if payload len==126/127)   |
+| |1|2|3|       |K|             |                               |
++-+-+-+-+-------+-+-------------+ - - - - - - - - - - - - - - - +
+|     Extended payload length continued, if payload len == 127  |
++ - - - - - - - - - - - - - - - +-------------------------------+
+|                               |Masking-key, if MASK set to 1  |
++-------------------------------+-------------------------------+
+| Masking-key (continued)       |          Payload Data         |
++-------------------------------- - - - - - - - - - - - - - - - +
+:                     Payload Data continued ...                :
++ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
+|                     Payload Data continued ...                |
++---------------------------------------------------------------+
+\end{lstlisting}
 
 \textbf{Closing handshake}
 
@@ -158,7 +164,7 @@ The WebSocket protocol is an independent TCP-based protocol and its only connect
 
 \subsubsection{Server-Sent Events (SSE) fundamentals}
 
-Server-Sent Events or simply referred to as SSE offer a one-way data flow known as a server push. This is suitable for unidirectional communications, such as a server to client notification. With SSE there is also a persistent connection but using the HTTP protocol so only the server can send data to the client at any time.
+Server-Sent Events or simply referred to as SSE offer one-way data flow. This is suitable for unidirectional communications, such as a server to client notification. With SSE there is also a persistent connection but using the HTTP protocol so only the server can send data to the client at any time.
 
 SSE is natively supported in browsers by using the EventSource interface, using this API consists of creating an EventSource object and registering an event listener. \cite{html-spec-sse}
 
@@ -166,40 +172,40 @@ SSE is natively supported in browsers by using the EventSource interface, using 
 
 The EventSource API uses an Interface Definition Language (IDL) to define the structure and behavior of the EventSource API in a formal specification. It outlines the methods, properties, and events that make up the EventSource interface, providing a standardized way for developers to understand and implement the API across different platforms and programming languages. \cite{html-spec-sse}
 
-\begin{verbatim}
-  [Exposed=(Window,Worker)]
-  interface EventSource : EventTarget {
-    constructor(
-      USVString url,
-      optional EventSourceInit eventSourceInitDict = {}
-    );
-  
-    readonly attribute USVString url;
-    readonly attribute boolean withCredentials; 
-  
-    // ready state
-    const unsigned short CONNECTING = 0;
-    const unsigned short OPEN = 1;
-    const unsigned short CLOSED = 2;
-    readonly attribute unsigned short readyState;
-  
-    // networking
-    attribute EventHandler onopen;
-    attribute EventHandler onmessage;
-    attribute EventHandler onerror;
-    undefined close();
-  };
-  
-  dictionary EventSourceInit { 
-    boolean withCredentials = false; 
-  };  
-\end{verbatim}
+\begin{lstlisting}[caption=EventSource API IDL]
+[Exposed=(Window,Worker)]
+interface EventSource : EventTarget {
+  constructor(
+    USVString url,
+    optional EventSourceInit eventSourceInitDict = {}
+  );
+
+  readonly attribute USVString url;
+  readonly attribute boolean withCredentials;
+
+  // ready state
+  const unsigned short CONNECTING = 0;
+  const unsigned short OPEN = 1;
+  const unsigned short CLOSED = 2;
+  readonly attribute unsigned short readyState;
+
+  // networking
+  attribute EventHandler onopen;
+  attribute EventHandler onmessage;
+  attribute EventHandler onerror;
+  undefined close();
+};
+
+dictionary EventSourceInit {
+  boolean withCredentials = false;
+};
+\end{lstlisting}
 
 Because the concept of SSE is not a technologie by its self but a concept utilising HTTP, it is not a protocol like WebSockets, the IDL can be used to implement the API in any language or platform. Not only does it provide a blueprint to implement the API outside of the browser but it also let's developers understand and implement their own libraries or frameworks.
 
 \subsubsection{WebTransport fundamentals}
 
-WebTransport is a new protocol meant to replace the WebSocket protocol but is not widely supported yet. While this is changing quickly with recently added support in Chrome beside the early support in Firefox, WebTransport is still in its early staging but is a promising upgrade from WebSocket that works quite similarly.
+WebTransport is a new protocol meant to replace the WebSocket protocol but is not widely supported yet. While this is changing quickly with recently added support in Chromium browsers beside the early support in Firefox, WebTransport is still in its early staging but is a promising upgrade from WebSocket.
 
 WebTransport uses HTTP/3 built on the QUIC protocol that is using UDP instead of TCP. This fixes several issues around the classic TCP protocol on which HTTP and WebSocket are based. \cite{w3-wt}
 
@@ -213,6 +219,6 @@ Choosing WebTransport at this stage may not be advisable for developers seeking 
 
 \subsubsection{Conclusion}
 
-Real-time communication, which is necessary for implementing collaborative functionalities, is achieved through the use of protocols and technologies that enable efficient and responsive data transfer between clients and servers. WebSockets is the standard and most widely used technology for real-time communication on the web, providing a full-duplex communication channel over a single TCP connection. It is well-suited for real-time applications such as chat, gaming and collaboration tools. Other alternatives such as GraphQL Subscriptions, MQTT, gRPC and WebRTC are designed for specific use cases and may not be suitable for general-purpose real-time communication. However, for scenarios where only one-way communication from the server suffices, Server-Sent Events (SSE) suffice, providing a simpler alternative. Looking forward, while WebTransport holds promise for future advancements in real-time web communication, its full potential remains to be realised, marking it as a technology to watch as it matures.
+Real-time communication, which is necessary for implementing collaborative functionalities, is achieved through the use of protocols and technologies that enable efficient and responsive data transfer between clients and servers. WebSockets is the standard and most widely used technology for real-time communication on the web, providing a full-duplex communication channel over a single TCP connection. It is well-suited for real-time applications such as chat, gaming and mutliplayer collaboration tools. Other alternatives such as GraphQL Subscriptions, MQTT, gRPC and WebRTC are designed for specific use cases and may not be suitable for general-purpose real-time communication. However, for scenarios where only one-way communication from the server is needed, Server-Sent Events (SSE) suffices, providing a simpler alternative. Looking forward, while WebTransport holds promise for future advancements in real-time web communication, its full potential remains to be realised, marking it as a technology to watch as it matures.
 
 To further understand the practical application of these technologies, see Apendix A: Case study Figma. By exploring Figma's innovative use of WebSockets to facilitate seamless collaboration, this study can gain valuable insights into how WebSocket work in practice.

@@ -33,12 +33,27 @@ Figma's flow:
 
 \subsubsection*{Conflict-free Replicated Data Types (CRDTs)}
 
+CRDTs are data structures that can be replicated across multiple computers in a network without coordination between them. They are designed to be conflict-free, meaning that any two replicas can be merged without conflict. In constrast to OT, CRDTs are simpler and more efficient, making them ideal for real-time collaboration systems. But that makes them less powerful and flexible than OTs. CRDTs can solve conflics by solving e.g. a write-write conflict by letting the last write win, while OTs can solve it by transforming the operations. In Google Docs this means OTs can solve a write-write conflict by merging both writes in stead of letting the last write win. So Figma's solution is to combine multiple CRDTs into a final data stucture representing the document. OTs are very complex and not needed for Figma's use case.
+
 \subsubsection*{Figma's document structure}
+
+A Figma document is similar to the HTML DOM. It is a tree of objects and it all starts with the root object being the document itself. Under the root there are page objects and under each page there is a hierarchy of objects representing the design (this tree is visible in the layers panel). Each object has an ID and a colection of preperties with values. You can imagine this as a two-level map where the first level is the object ID and the second level is another map of properties with values.
 
 \subsubsection*{Syncing object properties}
 
+The server keeps track of the latest value that any client sent for a given property on a given object. When 2 clients change and unrelated property on the same page objects won't conflic. Also when 2 clients change the same property on an unrealted object there won't be a conflict. But when 2 clients change the same property on the same object there will be. Using CRDTs 'last-writer-wins' the server keeps track of the last write and uses that value. When editing a text property it is important to note that Figma also lets the last write win and won't use any OTs because Figma is not a text editor and this isn't a priority.
+
+Another conflict occurs when a client applies it's change immediatly without waiting for the server. When this happends togheter with a change from another client a flicker occurs when older server values temporarily overwrite newer ones. The solution here is to predict eventual consistency. Our change has not been acknowledged yet by the server but it is the best predication because it's the most recent change. Then we can discard all incoming changes from the server that are older than our change until the server acknowledged our change.
+
+\subsubsection*{Syncing object creation and removal}
+
+Creating and deleting are explicit actions and the solution is again 'last-write-wins'. Figma does not store any deleted items or properties because they use an undo buffer: the client is responsible for keeping track of that undo buffer and this helps to document from continuing to grow. This system also relies on the clients for generating objectIDs because it needs to work offline, once the user is back online al the changes are sent to the server.
+
 \subsubsection*{Syncing object hierarchy}
 
-\subsubsection*{Implementing undo}
+Reparenting, moving an object from one parent to another, should't conflict with property changes, e.g. when someone is changing a property while someone else is reparenting the object. Also 2 reparenting operations on the same object should't conflict. A bad solution would be to delete the object and recreate it because the concurrent edits would be dropped. Figma's solution is to represent the parent-child relationship bu storing a link to a parent as a property. This way the object identity is preserved but this also causes another problem: a cycle can occure that causes A to become a child of B and B to become a child of A. The solution here is to reject cycles in the server. To also fix this on the client side the solution is to temporarily parent these object ot each other and remove them from the tree until the server rejects and the object is reparented to the corrent parent. While the object temporarily dissapears it's a simple solution to a very rare problem.
+
+Figma uses something interesting to order the children for a parent called practional indexing. An objects position in it's parrent array is stored as a fraction between 0 and 1. When inserting between 2 objects the position can be set to the avrage of those 2 objects. This doesn't cause ant issues when moving and adding ofjects.
 
 \subsubsection*{Conclusing}
+

@@ -33,26 +33,70 @@
 }
 \pagestyle{header}
 
-\definecolor{lightgray}{rgb}{.9,.9,.9}
-\definecolor{darkgray}{rgb}{.4,.4,.4}
-\definecolor{purple}{rgb}{0.65, 0.12, 0.82}
 \lstdefinelanguage{JavaScript}{
-  keywords={typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while, do, else, case, break},
-  keywordstyle=\color{blue}\bfseries,
-  ndkeywords={class, export, boolean, throw, implements, import, this},
-  ndkeywordstyle=\color{darkgray}\bfseries,
-  identifierstyle=\color{black},
-  sensitive=false,
-  comment=[l]{//},
-  morecomment=[s]{/*}{*/},
-  commentstyle=\color{purple}\ttfamily,
-  stringstyle=\color{red}\ttfamily,
-  morestring=[b]',
-  morestring=[b]"
+    keywords={
+        bigint,
+        break,
+        case,
+        catch,
+        catch,
+        const,
+        do,
+        else,
+        false,
+        function,
+        if,
+        in,
+        interface,
+        let,
+        new,
+        null,
+        null,
+        number,
+        object,
+        return,
+        string,
+        switch,
+        symbol,
+        true,
+        typeof, 
+        undefined,
+        var,
+        var,
+        while,
+    },
+    keywordstyle=\color{blue}\bfseries,
+    ndkeywords={
+    class,
+        NaN,
+        boolean,
+        export,
+        from,
+        implements,
+        import,
+        this,
+        throw,
+   },
+    ndkeywordstyle=\color{violet}\bfseries,
+    identifierstyle=\color{black},
+    sensitive=false,
+    comment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    commentstyle=\color{gray}\ttfamily,
+    stringstyle=\color{red}\ttfamily,
+    morestring=[b]',
+    morestring=[b]",
 }
+
+\lstdefinestyle{nohighlight}{
+    keywordstyle=\color{black},
+    identifierstyle=\color{black},
+    commentstyle=\color{black},
+    stringstyle=\color{black},
+}
+
 \lstset{
    language=JavaScript,
-   backgroundcolor=\color{lightgray},
    extendedchars=true,
    basicstyle=\footnotesize\ttfamily,
    showstringspaces=false,
@@ -66,10 +110,7 @@
    captionpos=b
 }
 
-
 \begin{document}
-
-% TODO: Visualing chapters with nice charts, images, tables, etc.
 
 \input{titlepage}
 
