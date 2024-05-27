@@ -95,6 +95,35 @@ SocketCluster offers a more advanced solution with features specially for large 
 
 \subsubsection{Server-Sent Events}
 
+For Server-Sent Events there are a number of libraries that add a polyfill to EventSource \cite{mdn-sse}. Because SSE is just a HTTP request held open there are no libraries adding additional features like there are for the WebSocket protocol. A polyfill is code that implements a feature of the development environment that does not natively support that feature \cite{polyfill}. In this case older versions of browsers do that do not natively support EventSource, to make sure the code also works in older browsers.
+
+\begin{enumerate}
+    \item eventsource: polyfill for Node.js
+    \item launchdarkly-eventsource: polyfill for Node.js
+    \item Remy sharp's EventSource polyfill
+    \item Yaffle's EventSource polyfill
+\end{enumerate}
+
 \textbf{Mercure}
 
+Mercure is an open-source protocol and tool designed to facilitate real-time communication between servers and clients using SSE. Mercure simplifies the implementation of real-time features in web applications by leveraging SSE. It provides a secure and scalable out of the box solution for delivering real-time updates from the server to client. Mercure offers a hub where your server can send events to and in return the clients connected to this hub receive those events. This concept of having an intermediary solution that offers a real-time connection is the same as using Pusher, a non open source third party alternative, or you can implement the concept yourself. The benefit of using Mercure is that you do not have to wright the real-time server yourself.
+
+\begin{enumerate}
+    \item Publishing updates: \\ The backend server sends updates to a Mercure hub using HTTP POST requests. The updates are in the form of events that contain data to be sent to the clients.
+    \item Subscribing to updates: \\ Clients subscribe to updates from Mercure hub by establishing a connection using HTTP GET requests. This connection remains open, allowing the server to push updates to the client as soon as they are available.
+    \item Receiving updates: \\ Once subscribed, clients receive updates in real-time by adding event listeners to the EventSource object. Without the need for polling, the updates are delivered as SSE.
+\end{enumerate}
+
+\begin{figure}[h]
+  \caption{Mercure connection diagram}
+  \includegraphics[width=0.7\linewidth]{mercure}
+  \centering
+\end{figure}
+
 \subsubsection{Conclusion}
+
+When selecting a library for implementing WebSockets or Server-Sent Events, various considerations come into play, each with its own trade-offs between feature richness, performance, scalability and ease of use. In a JavaScript/TypeScript environment, where Node.js is prevalent for backend development, the language choice directly affects the available options and considerations for real-time communication libraries.
+
+In the Node.js ecosystem, Socket.IO emerges as the go-to options due to its exentsive feature set, ease of use and strong community support. SocketCluster is a strong contender, offering powerful scalability features of out of the box, making it ideal for projects that anticipate high load. For those who prefer minimal abstraction and maximum control, ws is a viable option. It provides a lightweight and high-performance Websocket implementation that works with the native browser WebSocket API.
+
+Regarding SSE, while there are several polyfills available to ensure compatibility with older browsers. Mercure stands out as a robust open-source tool. It simplifies the implementation of real-time communication by handeling the complexities for us. Its compatibility with multiple backend languages, coupled with its simplicity and scalability, makes it an attractive option for developers seeking a reliable SSE implementation without the need for extensive custom coding.

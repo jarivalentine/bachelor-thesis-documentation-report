@@ -287,13 +287,12 @@ The initial data is set and the WebSocket connection is alive, the next steps co
 
 \textbf{Out of sync data}
 
-One of the challenges when working with real-time that comes to mind when working out this POC is can data be out of sync? And technically it can, data could have changed while the client was still waiting for that initial request to arrive. There must be a way to keep data in sync, and of course some server side logic with synchronisation requests from clients could fix this. Maybe the better way is to really make sure data can never be out of sync. A fix could be to open the connection before fetching with HTTP and to not let that initial data override the client data but add to it if a task already got added by a socket event. Since synchronisation issues are a big hurdle for this POC it is easier to look at the case study of Figma and how to keep clients in sync.
+One of the challenges when working with real-time that comes to mind when working out this POC is can data be out of sync? And technically it can, data could have changed while the client was still waiting for that initial request to arrive. There must be a way to keep data in sync, and of course some server side logic with synchronisation requests from clients could fix this. Maybe the better way is to really make sure data can never be out of sync. A fix could be to open the connection before fetching with HTTP and to not let that initial data override the client data but add to it if a task already got added by a socket event. Since synchronisation issues are a big hurdle for this POC it is easier to look at the case study of Figma and how to keep clients in sync, see Apendix A.
 
-\textit{Cite figma case study and conclude syncing issue}
+In conclusion, leveraging techniques such as CRDTs, inspired by Figma's innovative approach, can effectively address synchronization challenges in real-time applications.
 
 \textbf{Feature 2: Design canvas}
 
-\textit{insert design canvas implementation POC}
 
 \subsubsection{Server-Sent Events implementation}
 
@@ -369,20 +368,15 @@ When this is setup the client can use the EventSource API and add EventListners 
   }, [username]);
 \end{lstlisting}
 
-Very important to note is that this is not authenticated, native SSE does not support passing headers just like native WebSockets. Because this POC is already set up with token based authentication, changing to cookie based authentication is not an ideal solution. There are many SSE libraries adding support for passing headers that can be used or instead passing the token as a query parameter is possible but not ideal.
+It's crucial to acknowledge that native Server-Sent Events (SSE) lack support for passing headers, similar to native WebSocket. Because this POC is already set up with token based authentication, changing to cookie based authentication is not an ideal solution. Instead passing the token as a query parameter is possible but not ideal.
 
-\textit{conclude limitations of native APIs}
+However, it's worth noting that Mercure, as a powerful open-source tool, addresses these authentication limitations by providing robust support for token-based authentication. 
 
 \textbf{Notifications with Mercure}
 
-\textit{insert notifications implementation POC}
+\subsubsection{AsyncAPI Specification}
 
-\subsubsection{Tools}
 
-\textbf{AsyncAPI}
 
 \subsubsection{Conclusion}
 
-% \begin{lstlisting}[caption=]
-
-% \end{lstlisting}
