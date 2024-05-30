@@ -1,3 +1,33 @@
 \newpage
 
 \section{Conclusion}
+
+This thesis has delved into the realm of real-time web technologies, specifically focusing on WebSockets and Server-Sent Events (SSE). This exploration was driven by the significant role these technologies play in modern web development, enabling dynamic, interactive applications that require efficient data exchange between clients and servers. By understanding the fundamentals of these technologies, developers can make informed decisions that enhance both the functionality and performance of their web applications.
+
+The research began by establishing a foundational understanding of WebSockets and SSE. WebSockets offer a full-duplex communication channel over a single, long-lived connection, allowing for bidirectional data flow between the client and server. This is particularly useful for applications requiring real-time updates, such as chat applications, multiplayer gaming, and collaborative tools. Conversely, SSE operates over HTTP and allows servers to push updates to clients, maintaining a one-way channel that is efficient for scenarios where data primarily flows from the server to the client. This makes SSE an excellent choice for live data, notifications, and other applications where clients need to receive continuous updates without initiating new requests.
+
+Exploring various libraries for implementing WebSockets revealed several strong contenders, each suited to different needs:
+
+\begin{enumerate}
+    \item \textbf{Socket.IO} \\ This library stood out due to its feature set and ease of use. It abstracts the complexities of WebSocket communication, providing fallbacks for environments where WebSockets may not be supported.
+    \item \textbf{SocketCluster} \\ When scaling is a primary concern, SocketCluster shines. It is designed to handle large-scale, real-time systems out of the box, making it suitable for applications with high concurrency and demanding scalability requirements.
+    \item \textbf{ws} \\ For those who prefer minimalism and do not require the abstractions provided by higher-level libraries, ws offers a lightweight and efficient WebSocket implementation. It is a good choice for developers who need more control over their WebSocket connections and are comfortable managing the details themselves
+\end{enumerate}
+
+For Server-Sent Events, the research highlighted Mercure as a robust option. Mercure simplifies the implementation of SSE by providing a ready-to-use solution that integrates well with existing infrastructures
+
+\textbf{Implementation}
+
+On an implementation level, WebSockets demonstrate their value in scenarios where bidirectional communication is crucial. Applications such as live chat systems, real-time collaboration tools, and multiplayer games benefit significantly from the low latency and high interactivity provided by WebSockets. The ability to send data from the client to the server and back again in real-time enables a fluid user experience that static, request-response models cannot achieve.
+
+SSE, while limited to unidirectional communication, excels in applications where the server needs to push continuous updates to the client. This includes use cases like live sports scores, news feeds, and notifications. SSE's simplicity and reliance on standard HTTP/2 make it a lightweight and scalable option for these scenarios.
+
+\textbf{Abstraction}
+
+The decision to use an abstraction library versus a more minimalistic approach depends on the specific requirements of the project and the expertise of the development team. Abstraction libraries like Socket.IO offer significant advantages in terms of ease of implementation, cross-browser compatibility, and built-in features such as reconnection logic and room-based communication. These benefits can greatly accelerate development time and reduce the complexity of managing WebSocket connections.
+
+However, when performance is crucial, and the overhead of additional features is unnecessary, a minimalistic approach with libraries like ws might be preferable. This allows for finer control over the communication process and can lead to performance optimizations that are tailored to the specific needs of the application.
+
+\textbf{Documentation}
+
+Finally, the thesis emphasizes the importance of thorough documentation, particularly when dealing with complex real-time systems. AsyncAPI, a specification for defining asynchronous APIs, provides a standardized way to document and manage these systems. By adopting AsyncAPI, developers can ensure that their real-time communication protocols are well-documented, facilitating easier maintenance, scalability, and collaboration within development teams.

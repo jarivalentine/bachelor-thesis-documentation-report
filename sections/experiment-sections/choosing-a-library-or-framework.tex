@@ -2,17 +2,19 @@
 
 \subsection{Choosing a library}
 
-The next step is deciding what library to work with when using WebSockets or Server-Sent Events. These technologies are language agnostic thus making choosing a library also come down to what language you will be working with. Eventually choosing consists of some trade offs and most of the time this means choosing between having to implement a feature yourself or having to accept a layer of abstraction to not implement a feature.
+The next step is deciding what library to work with when using WebSockets or Server-Sent Events. These technologies are language agnostic thus choosing a library also come down to what language you will be working with. Eventually this decision consists of some trade-offs, and most of the time this trade of is choosing between having to implement a feature yourself or having to accept a layer of abstraction to not implement that feature.
+
+
 
 \textbf{Methodologies:} Literature review, comparative analysis
 
 \subsubsection{Programming language}
 
-In a general scope the client side of a web application will be JavaScript but the backend language could be anything. Choosing a language for a real-time API is a hard choice to make that takes a lot into account but eventually choosing a library is in each language the same process. A good list of possible libraries should be analysed and compared to choose what fits best to the project's needs.
+In general the client side of a web application will be in JavaScript but the backend language could be anything. Choosing a language for a real-time API is a hard choice to make that takes a lot into account. Eventually choosing a library is in each language the same process. A good list of possible libraries should be analysed and compared before deciding what fits best for the project's needs.
 
-It makes sense to also look into JS/TS for the backend because it is already used in the frontend. There are a lot of WebSocket server library options in Node.js that offer alot of features. These libraries with alot of features work togheter with a client library that needs to be used because they add a layer of abstraction.
+It makes sense to also look into JS/TS for the backend because it is already used in the frontend. There are a lot of WebSocket server library options in Node.js that offer a lot of features. These libraries with a lot of features work together with a client library that needs to be used because they add a layer of abstraction.
 
-On the other hand it makes sense to look into other languages for a WebSocket server. Because performance is important in real-time communication a language like Rust makes the most sense, this is supported by Figma's choice (see Apendix A). But this type of performance will only be noticeable when talking about real-time functionality that takes on a number of events like for example Figma does. Figma started its WebSocket server in TypeScript until big files started to experience lag in real-time they had to make the switch to Rust.
+On the other hand it makes sense to look into other languages for a WebSocket server. Because performance is important in real-time communication a language like Rust makes the most sense. Choosing Rust can make a big difference (see Appendix A). However, this level of performance enhancement will only become apparent in applications that rely heavily on real-time functionality, such as Figma, which processes numerous events simultaneously. Figma initially used TypeScript for its WebSocket server. However, as large files began to cause lag in real-time performance, they switched to Rust for better responsiveness.
 
 \textbf{Business perspective}
 
@@ -20,7 +22,7 @@ With Teamleader it makes sense to look into TypeScript as a language because of 
 
 \subsubsection{Node.js libraries for WebSockets}
 
-Before starting a comparative analysis a list  features that have to be compared should be defined. Additionally it's also good to look at some other concepts like how it is percieved in the community to if the library is actively being maintained.
+Before starting a comparative analysis a list of features that have to be compared should be defined. Additionally it's also good to look at some other concepts like how that library is perceived in the community or if the library is actively being maintained.
 
 Features:
 
@@ -55,7 +57,7 @@ Additional:
     Sockette        & Yes                 & \textcolor{red}{No} & \textcolor{red}{No} & \textcolor{red}{No} & \textcolor{red}{No} \\ \hline
     Faye            & \textcolor{red}{No} & Yes                 & \textcolor{red}{No} & Yes                 & \textcolor{red}{No} \\ \hline
   \end{tabular}
-  \caption{Library feature comparision}
+  \caption{Library feature comparison}
 \end{table}
 
 \begin{table}[h]
@@ -79,19 +81,19 @@ These results show that there are 2 main libraries that offer the most features:
 
 \subsubsection{Abstraction layer}
 
-The more features a library has the less the developer has to implement themselves. The main libraries that offer a lot of features are very much alike: Socket.io and SocketCluster offer the most but this comes at some kind of cost. The layer of abstraction these libraries add limits how you can work with them. Because of the way they work with the WebSocket protocol you cannot send events from a different server for example. These libraryies require you to use the client side package they offer in JavaScript or TypeScript. While sometimes there are community projects providing a client for let's say PHP, it is not a real option to develop using these projects because of the lack of active development.
+The more features a library has the less the developer has to implement. The main libraries that offer a lot of features are very much alike: Socket.io and SocketCluster offer the most but this comes at some kind of cost. The layer of abstraction these libraries add limits how you can work with them. Because of the way they work with the WebSocket protocol you cannot send events from a different server for example. These libraries require you to use the client side package they offer in JavaScript or TypeScript. While sometimes there are community projects providing a client for let's say PHP, it is not a real option to develop using these projects because of the lack of active development.
 
-The other choice would be using native WebSocket client side with any kind of package on the server that doesn't add a layer of abstraction. Server side in this case the main library would be 'ws'. The important takeaway is that this side of the trade off enables you to send events from let's say a PHP server, but of course the real question is: do you need to be able to do that?
+The other choice would be using native WebSocket client side with any kind of package on the server that doesn't add a layer of abstraction. In this case the main server library would be 'ws'. The important takeaway is that this side of the trade off enables you to send events from let's say a PHP server, but of course the real question is: do you need to be able to do that?
 
-Eventually the concern of not being able to have a client in other languages is not an issue in real-time communication. The client and WebSocket server needs to communicate using WebSockets but when you want to communicate to the WebSocket server from a different server this doesn't need to happen using a persistent connection. Other technologies can easily be implemented or even adding HTTP endpoints to the server.
+Eventually the concern of not being able to have a client in other languages is not an issue in real-time communication. The client and WebSocket server needs to communicate using WebSockets but when you want to communicate to the WebSocket server from a different server this doesn't need to happen using a persistent connection. Other solutions can be implemented like adding a HTTP endpoints.
 
 The real problem that is left when choosing SocketCluster or Socket.io is that it might add unnecessary abstraction building their own protocol over WebSockets with features a project might not need. These features can be useful but may add unnecessary overhead.
 
 \textbf{SocketCluster vs Socket.io}
 
-While there is critique on these technologies as mentioned before, they still offer the most features so when the decision is made to choose an abstraction and losing control is not an issue, which abstraction should be considered?
+While there is critique on these technologies as mentioned before, they still offer the most features. When the decision is made to choose an abstraction because losing control is not an issue, which abstraction should be considered?
 
-SocketCluster offers a more advanced solution with features specially for large projects like the attention to scaling. In contrast Socket.io is generally known as an easier setup for smaller projects. Socket.io has a very easy learning curve and can get alot done, it has a very large community and generally known as the go to library to implement real-time.
+SocketCluster offers a more advanced solution with features especially for large projects like the attention to scaling. In contrast Socket.io is generally known as an easier setup for smaller projects. Socket.io has a very easy learning curve and can get alot done, it has a very large community and generally known as the go to library to implement real-time.
 
 \subsubsection{Server-Sent Events}
 
@@ -106,7 +108,7 @@ For Server-Sent Events there are a number of libraries that add a polyfill to Ev
 
 \textbf{Mercure}
 
-Mercure is an open-source protocol and tool designed to facilitate real-time communication between servers and clients using SSE. Mercure simplifies the implementation of real-time features in web applications by leveraging SSE. It provides a secure and scalable out of the box solution for delivering real-time updates from the server to client. Mercure offers a hub where your server can send events to and in return the clients connected to this hub receive those events. This concept of having an intermediary solution that offers a real-time connection is the same as using Pusher, a non open source third party alternative, or you can implement the concept yourself. The benefit of using Mercure is that you do not have to wright the real-time server yourself.
+Mercure is an open-source protocol and tool designed to facilitate real-time communication between servers and clients using SSE. Mercure simplifies the implementation of real-time features in web applications by leveraging SSE. It provides a secure and scalable out of the box solution for delivering real-time updates from the server to client. Mercure offers a hub where your server can send events to and in return the clients connected to this hub receive those events. This concept of having an intermediary solution that offers a real-time connection is the same as using Pusher, a non open source third party alternative, or you can implement the concept yourself. The benefit of using Mercure is that you do not have to write the real-time server yourself.
 
 \begin{enumerate}
     \item Publishing updates: \\ The backend server sends updates to a Mercure hub using HTTP POST requests. The updates are in the form of events that contain data to be sent to the clients.
@@ -124,6 +126,6 @@ Mercure is an open-source protocol and tool designed to facilitate real-time com
 
 When selecting a library for implementing WebSockets or Server-Sent Events, various considerations come into play, each with its own trade-offs between feature richness, performance, scalability and ease of use. In a JavaScript/TypeScript environment, where Node.js is prevalent for backend development, the language choice directly affects the available options and considerations for real-time communication libraries.
 
-In the Node.js ecosystem, Socket.IO emerges as the go-to options due to its exentsive feature set, ease of use and strong community support. SocketCluster is a strong contender, offering powerful scalability features of out of the box, making it ideal for projects that anticipate high load. For those who prefer minimal abstraction and maximum control, ws is a viable option. It provides a lightweight and high-performance Websocket implementation that works with the native browser WebSocket API.
+In the Node.js ecosystem, Socket.IO emerges as the go-to options due to its exentsive feature set, ease of use and strong community support. SocketCluster is a strong contender, offering powerful scalability features out of the box, making it ideal for projects that anticipate high load. For those who prefer minimal abstraction and maximum control, ws is a viable option. It provides a lightweight and high-performance Websocket implementation that works with the native browser WebSocket API.
 
-Regarding SSE, while there are several polyfills available to ensure compatibility with older browsers. Mercure stands out as a robust open-source tool. It simplifies the implementation of real-time communication by handeling the complexities for us. Its compatibility with multiple backend languages, coupled with its simplicity and scalability, makes it an attractive option for developers seeking a reliable SSE implementation without the need for extensive custom coding.
+Regarding SSE, while there are several polyfills available to ensure compatibility with older browsers. Mercure stands out as a robust open-source tool. It simplifies the implementation of real-time communication by handling the complexities for us. Its compatibility with multiple backend languages, coupled with its simplicity and scalability, makes it an attractive option for developers seeking a reliable SSE implementation without the need for extensive custom coding.

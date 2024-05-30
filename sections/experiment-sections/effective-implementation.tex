@@ -4,6 +4,8 @@
 
 Before implementing real-time in a web application it is important to make a suitable decision if you want to use WebSockets or Server Sent-Events. This comes down to choosing between bidirectional or unidirectional communication.
 
+\textbf{Methodologies:} Practical experiments, prototyping
+
 A feature can be implemented in real-time in 2 different ways. In the first way the data is sent from client to server using a bidirectional connection and the other clients receive the new data from the server thus using WebSockets. The second option consists of using a HTTP request to send data to the server and updating the clients using Server Sent-Events and thus only needing a unidirectional persistent connection.
 
 This means there is a difference between needing bidirectional communication and choosing to use it. In some use cases choosing for a HTTP request to send data is not sufficient enough and can impact the performance:
@@ -287,12 +289,65 @@ The initial data is set and the WebSocket connection is alive, the next steps co
 
 \textbf{Out of sync data}
 
-One of the challenges when working with real-time that comes to mind when working out this POC is can data be out of sync? And technically it can, data could have changed while the client was still waiting for that initial request to arrive. There must be a way to keep data in sync, and of course some server side logic with synchronisation requests from clients could fix this. Maybe the better way is to really make sure data can never be out of sync. A fix could be to open the connection before fetching with HTTP and to not let that initial data override the client data but add to it if a task already got added by a socket event. Since synchronisation issues are a big hurdle for this POC it is easier to look at the case study of Figma and how to keep clients in sync, see Apendix A.
+One of the challenges when working with real-time that comes to mind when working out this POC is can data be out of sync? And technically it can, data could have changed while the client was still waiting for that initial request to arrive. There must be a way to keep data in sync, and of course some server side logic with synchronisation requests from clients could fix this. Maybe the better way is to really make sure data can never be out of sync. A fix could be to open the connection before fetching with HTTP and to not let that initial data override the client data but add to it if a task already got added by a socket event. Since synchronisation issues are a big hurdle for this POC it is easier to look at the case study of Figma and how to keep clients in sync, see Appendix A.
 
 In conclusion, leveraging techniques such as CRDTs, inspired by Figma's innovative approach, can effectively address synchronization challenges in real-time applications.
 
 \textbf{Feature 2: Design canvas}
 
+All multiplayer design canvas apps have one feature in common, live cursor sharing. This feature perfectly demonstrates the need for a persistent connection when sending data to the server. Implementing it also starts by adding a new event listener to the WebSocket server.
+
+\begin{lstlisting}[caption=Cursor Event Handler]
+export const cursorHandler = (socket: AuthenticatedSocket, io: Server) => {
+  socket.on("mousePosition", (data) => {
+    try {
+      const { username, position, room } = data;
+
+      io.to(room).emit("mousePosition", { username, position });
+    } catch (error: any) {
+      socket.emit("cursorError", { error: error.message });
+    }
+  });
+};
+\end{lstlisting}
+
+When the server receives this event it send the data to each other user connected to the room. Important with this feature is that there is no need for persisting this data. When adding real-time objects to the canvas that need to be persisted syncing complexities arise that are discussed in Appendix A.
+
+On the client side the connected users send their cursor location using this event. The clients also listen to the event to show all other clients their cursor in real-time.
+
+\begin{lstlisting}[caption=Client sending cursor data to server]
+    const handleMouseEnter = (event: MouseEvent) => {
+      if (!socket || !canvasRef.current) return;
+      const canvasRect = canvasRef.current.getBoundingClientRect();
+      const mouseX = event.clientX - canvasRect.left;
+      const mouseY = event.clientY - canvasRect.top;
+    
+      const userPosition = {
+        username,
+        position: {
+          x: mouseX,
+          y: mouseY,
+        },
+        room: `${name}-design`,
+      };
+      socket.emit("mousePosition", userPosition);
+    };
+    
+    canvas.addEventListener("mousemove", handleMouseEnter);
+\end{lstlisting}
+
+\begin{lstlisting}[caption=Client receiving other cursor data]
+  socket.on("mousePosition", (userPosition) => {
+    setUserPositions((prevPositions) => {
+      return {
+        ...prevPositions,
+        [userPosition.username]: userPosition.position,
+      };
+    });
+  });
+\end{lstlisting}
+
+Finally this position data gets drawn onto the canvas. One realisation when creating this feature is the question if this actually needs to be in perfect real-time all the time? The answer is no, not really. While it has to be in real-time, it is okay to add a buffer to sending cursor positions to the server. This way amount of message the server needs to handle is limited alot by only adding a 100ms buffer. This can cause flickering when receiving these locations client side but that issues can easily be fixed smoothing the movement between each position update. 
 
 \subsubsection{Server-Sent Events implementation}
 
@@ -374,9 +429,186 @@ However, it's worth noting that Mercure, as a powerful open-source tool, address
 
 \textbf{Notifications with Mercure}
 
+Finally, Mercure is a solution where the developer doesn't have to deal with any of the real-time server side. This setup is very straightforward. The Mercure Hub server can be created with a simple docker compose. 
+
+\begin{lstlisting}[caption=docker-compose.yaml for Mercure Hub]
+services:
+  mercure:
+    image: dunglas/mercure
+    restart: unless-stopped
+    environment:
+      SERVER_NAME: ":80"
+      MERCURE_PUBLISHER_JWT_KEY: "!ChangeThisMercureHubJWTSecretKey!"
+      MERCURE_SUBSCRIBER_JWT_KEY: "!ChangeThisMercureHubJWTSecretKey!"
+      MERCURE_EXTRA_DIRECTIVES: "cors_origins http://localhost:5173"
+    command: /usr/bin/caddy run --config /etc/caddy/Caddyfile.dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "https://localhost/healthz"]
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - mercure_data:/data
+      - mercure_config:/config
+
+volumes:
+  mercure_data:
+  mercure_config:
+\end{lstlisting}
+
+Now the server can send POST requests to this hub whenever it wants to. In the following example when a task is created this gets communicated the the Mercure Hub using axios to send a POST request.
+
+\begin{lstlisting}[caption=POST request to the Mercure Hub]
+export const publishNotification = async (topic: string, data: any) => {
+  try {
+    await axios.post(
+      MERCURE_HUB_URL as string,
+      {
+        data: data,
+        topic: topic,
+      },
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Bearer ${process.env.MERCURE_JWT_TOKEN}`,
+        },
+      }
+    );
+  } catch (error) {
+    console.error("Failed to publish notification:", error);
+  }
+};
+\end{lstlisting}
+
+\begin{lstlisting}[caption=]
+export default class TaskService {
+  static async create(title: string, status: string, workspacename: string) {
+    try {
+      const task = await prisma.task.create({
+        data: {
+          title,
+          status,
+          board: {
+            connect: {
+              name: workspacename,
+            },
+          },
+        },
+      });
+
+      await publishNotification(title, `workspace/${workspacename}/task`);
+
+      return task;
+    } catch (error: any) {
+      throw new Error(error);
+    }
+  }
+  ...
+\end{lstlisting}
+
+Now the client can listen to the Mercure Hub using Server-Sent Events. Because notifications are across the entire app it makes sense to write a provider with a context.
+
+\begin{lstlisting}[caption=EventSource listening to the topic]
+  useEffect(() => {
+    const fullUrl = config.mercureUrl + topic;
+
+    const eventSource = new EventSource(fullUrl);
+
+    eventSource.onmessage = (event) => {
+      const newData = JSON.parse(event.data);
+      setData(newData);
+    };
+
+    eventSource.onerror = (error) => {
+      console.error("Failed to connect to Mercure:", error);
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, [topic]);
+\end{lstlisting}
+
 \subsubsection{AsyncAPI Specification}
 
+AsyncAPI is an open-source initiative and specification designed to provide a standardized way to define and document event-driven APIs. Similar to how OpenAPI (formerly known as Swagger) standardizes RESTful APIs, AsyncAPI aims to bring a similar level of standardization and clarity to the world of event-driven and message-driven architectures.
 
+In the context of WebSockets, AsyncAPI provides a standardized way to describe the communication channels and message exchanges that occur over a WebSocket connection. This can include defining the various events or messages that a client can send to a server and vice versa, along with the structure of these messages.
+
+\textbf{Key features}
+
+\begin{enumerate}
+  \item Standardized Documentation
+  \item Schema Definitions
+  \item Protocol-Specific Features
+  \item Interactive Documentation
+  \item Code Generation
+\end{enumerate}
+
+Consider an example of a WebSocket-based chat application. The following AsyncAPI document describes the API for such an application, where clients can send messages to a chat room and receive messages from other participants.
+
+\begin{lstlisting}[caption=EventSource listening to the topic]
+asyncapi: 3.0.0
+info:
+  title: Chat Application API
+  version: 1.0.0
+  description: Example of a WebSocket chat application
+
+channels:
+  chatMessage:
+    address: /chatMessage
+    messages:
+      chatMessage:
+        $ref: '#/components/messages/chatMessage'
+  chatReply:
+    address: /chatReply
+    messages:
+      chatReply:
+        $ref: '#/components/messages/chatReply'
+
+operations:
+  sendMessage:
+    action: send
+    channel:
+      $ref: '#/channels/chatMessage'
+    reply:
+      channel:
+        $ref: '#/channels/chatReply'
+
+components:
+  messages:
+    chatMessage:
+      payload:
+        type: object
+        properties:
+          user:
+            type: string
+          message:
+            type: string
+    chatReply:
+      payload:
+        type: object
+        properties:
+          user:
+            type: string
+          message:
+            type: string
+          timestamp:
+            type: string
+            format: date-time
+\end{lstlisting}
+
+AsyncAPI is a powerful tool for documenting and managing WebSocket-based APIs. By providing a standardized way to describe WebSocket communication channels and message formats, AsyncAPI improves collaboration, reduces integration errors, and accelerates development.
 
 \subsubsection{Conclusion}
 
+In conclusion, implementing real-time features in a web application requires careful consideration of the communication method, whether it be WebSockets for bidirectional communication or Server-Sent Events (SSE) for unidirectional communication. WebSockets are ideal for applications needing constant, interactive exchanges between clients and servers, such as canvas tools, multiplayer games, and collaborative text editors. On the other hand, SSE is suitable for simpler scenarios like live status boards, real-time statistics, and notifications where bidirectional communication is unnecessary.
+
+Future-proofing the application is crucial; starting with WebSockets provides flexibility for later expansion into features requiring bidirectional communication. This trade-off needs to be considered at the design phase to avoid complexities in future updates.
+
+The Proof of Concept (POC) showcased effective use of WebSockets and SSE, demonstrating their implementation for a task status board and a design canvas, respectively. WebSockets facilitated real-time updates and interactions, while SSE provided a simpler, efficient method for streaming updates to clients without the need for a persistent connection. Additionally, tools like Mercure enhance SSE by offering robust support for token-based authentication and simplifying server-side setup.
+
+Finally, adopting AsyncAPI specifications can standardize documentation and implementation of event-driven APIs, ensuring clarity and interoperability across different components of a real-time web application. By considering these factors and leveraging appropriate technologies, developers can effectively implement and maintain real-time features in their web applications.

@@ -61,7 +61,7 @@ In addition to WebSocket, Server-Sent Events (SSE) also play a crucial role in f
 
 \textbf{Emeging solutions}
 
-While WebSockets have become a foundational technologie for real-time communication on the web, WebTransport aims to enhance web applications further. Offering a solutions to the head-of-line blocking issue and better performance, WebTransport is still in its experimental stage and not yet widely adopted \cite{mdn-wt}. Despite this, the evolution of real-time web communication continues to be driven by technological advancements and developer needs.
+While WebSockets have become a foundational technology for real-time communication on the web, WebTransport aims to enhance web applications further. Offering a solutions to the head-of-line blocking issue and better performance, WebTransport is still in its experimental stage and not yet widely adopted \cite{mdn-wt}. Despite this, the evolution of real-time web communication continues to be driven by technological advancements and developer needs.
 
 \subsubsection{WebSocket fundamentals}
 
@@ -201,11 +201,11 @@ dictionary EventSourceInit {
 };
 \end{lstlisting}
 
-Because the concept of SSE is not a technologie by its self but a concept utilising HTTP, it is not a protocol like WebSockets, the IDL can be used to implement the API in any language or platform. Not only does it provide a blueprint to implement the API outside of the browser but it also let's developers understand and implement their own libraries or frameworks.
+Because the concept of SSE is not a technology by its self but a concept utilising HTTP, it is not a protocol like WebSockets, the IDL can be used to implement the API in any language or platform. Not only does it provide a blueprint to implement the API outside of the browser but it also let's developers understand and implement their own libraries or frameworks.
 
 \subsubsection{WebTransport fundamentals}
 
-WebTransport is a new protocol meant to replace the WebSocket protocol but is not widely supported yet. While this is changing quickly with recently added support in Chromium browsers beside the early support in Firefox, WebTransport is still in its early staging but is a promising upgrade from WebSocket.
+WebTransport is a new protocol meant to replace the WebSocket protocol but is not widely supported yet. WebTransport is still in its early stages but this is changing quickly with recently added support in Chromium browsers beside the early support in Firefox.
 
 WebTransport uses HTTP/3 built on the QUIC protocol that is using UDP instead of TCP. This fixes several issues around the classic TCP protocol on which HTTP and WebSocket are based. \cite{w3-wt}
 
@@ -219,6 +219,6 @@ Choosing WebTransport at this stage may not be advisable for developers seeking 
 
 \subsubsection{Conclusion}
 
-Real-time communication, which is necessary for implementing collaborative functionalities, is achieved through the use of protocols and technologies that enable efficient and responsive data transfer between clients and servers. WebSockets is the standard and most widely used technology for real-time communication on the web, providing a full-duplex communication channel over a single TCP connection. It is well-suited for real-time applications such as chat, gaming and mutliplayer collaboration tools. Other alternatives such as GraphQL Subscriptions, MQTT, gRPC and WebRTC are designed for specific use cases and may not be suitable for general-purpose real-time communication. However, for scenarios where only one-way communication from the server is needed, Server-Sent Events (SSE) suffices, providing a simpler alternative. Looking forward, while WebTransport holds promise for future advancements in real-time web communication, its full potential remains to be realised, marking it as a technology to watch as it matures.
+Real-time communication, which is necessary for implementing collaborative functionalities, is achieved through the use of protocols and technologies that enable efficient and responsive data transfer between clients and servers. WebSockets is the standard and most widely used technology for real-time communication on the web, providing a full-duplex communication channel over a single TCP connection. It is well-suited for real-time applications such as chat, gaming and multiplayer collaboration tools. Other alternatives such as GraphQL Subscriptions, MQTT, gRPC and WebRTC are designed for specific use cases and may not be suitable for general-purpose real-time communication. However, for scenarios where only one-way communication from the server is needed, Server-Sent Events (SSE) suffices, providing a simpler alternative. Finally, WebTransport holds promise for future advancements in real-time web communication, its full potential remains to be realised, marking it as a technology to watch as it matures.
 
-To further understand the practical application of these technologies, see Apendix A: Case study Figma. By exploring Figma's innovative use of WebSockets to facilitate seamless collaboration, this study can gain valuable insights into how WebSocket work in practice.
+To further understand the practical application of these technologies, see Appendix A: Case study Figma. By exploring Figma's innovative use of WebSockets to facilitate seamless collaboration, this study can gain valuable insights into how WebSocket work in practice.
