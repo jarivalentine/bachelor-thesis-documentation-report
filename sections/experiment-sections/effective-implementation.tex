@@ -2,11 +2,11 @@
 
 \subsection{Effective implementation}
 
-Before implementing real-time in a web application it is important to make a suitable decision if you want to use WebSockets or Server Sent-Events. This comes down to choosing between bidirectional or unidirectional communication.
-
 \textbf{Methodologies:} Practical experiments, prototyping
 
-A feature can be implemented in real-time in 2 different ways. In the first way the data is sent from client to server using a bidirectional connection and the other clients receive the new data from the server thus using WebSockets. The second option consists of using a HTTP request to send data to the server and updating the clients using Server Sent-Events and thus only needing a unidirectional persistent connection.
+Before implementing real-time in a web application it is important to make a suitable decision if you want to use WebSockets or Server Sent-Events. This comes down to choosing between bidirectional or unidirectional communication.
+
+A feature can be implemented in real-time using two different approaches. The first approach utilizes WebSockets, where data is sent from the client to the server through a bidirectional connection. Subsequently, the server sends the updated data to other clients, maintaining a continuous, interactive communication channel. The second approach leverages HTTP requests for data transmission from the client to the server. The server then updates the clients using Server-Sent Events (SSE), which only requires a unidirectional persistent connection. This method simplifies the communication model by using HTTP for sending data and SSE for receiving updates.
 
 This means there is a difference between needing bidirectional communication and choosing to use it. In some use cases choosing for a HTTP request to send data is not sufficient enough and can impact the performance:
 
@@ -16,31 +16,31 @@ This means there is a difference between needing bidirectional communication and
   \item Text-editing
 \end{enumerate}
 
-The data that needs to be constantly transmitted can benefit from a bidirectional connection because the connection is persistent and doesn't have to be created for each change. But in other features this is not necessary and a HTTP request is sufficient for example:
+The data that needs to be constantly transmitted can benefit from a bidirectional connection because the connection is persistent and doesn't have to be established for each change. However, for other features, this level of persistence is unnecessary, and an HTTP request is sufficient. For example
 
 \begin{enumerate}
   \item Live status boards
-  \item Real-time stats
+  \item Form submissions
   \item Notifications
 \end{enumerate}
 
-The final thing to always keep in mind is to make sure the application is future proof. When choosing SSE there are limited options to expand with features that require bidirectional communication while choosing WebSockets from the start doesn't cause this issue. This is an important trade off that needs to be made. Choosing Server Sent-Events makes sense to keep it simple and definitely makes sense when upgrading something into real-time that was not in real-time before.
+Lastly it is important to think about how to ensure the application is future-proof. Choosing SSE limits options for future bidirectional communication features, while starting with WebSockets avoids this issue. This trade-off is crucial. 
 
 \subsubsection{WebSockets implementation}
 
-To provide a basic example of how to use WebSockets a POC will be worked out to understand the 2 types of features. So feature 1 is using WebSockets in a setting where Server Sent-Events is sufficient but also using the same WebSocket to provide feature 2, that needs the bidirectional communication. The first feature is a status board and the second feature is a canvas with moving objects. SocketIO will be used to demonstrate the features a library can bring to the table, chosen because of its easy implementation.
+To illustrate the practical use of WebSockets, a proof of concept (POC) will be developed to understand the two types of features. Feature 1 utilizes WebSockets in a scenario where Server-Sent Events (SSE) would suffice, while feature 2 requires bidirectional communication. The first feature will be a status board, and the second will be a canvas with moving objects. Socket.io is chosen for this demonstration due to its ease of implementation and rich feature set, showcasing the advantages a robust library can offer.
 
 \textbf{POC setup}
 
 \begin{figure}[h]
   \caption{POC diagram}
-  \includegraphics[width=0.8\linewidth]{POC_diagram}
+  \includegraphics[width=0.80\linewidth]{POC_diagram}
   \centering
 \end{figure}
 
-Before implementing the features in this POC there are some things that need to be implemented first. A collaborative feature means different users working together, so users meaning authentication and authorization is a must have before even thinking about collaborative features.
+Before delving into feature implementation within this POC, certain prerequisites must be addressed. Collaboration entails multiple users working together, necessitating robust user authentication and authorization mechanisms.
 
-The server in this POC will be created with Express and TypeScript because of the straightforward and simple implementation. Other dependencies include JWT for token based authentication, bcrypt for password hashing and Prisma as ORM. Of Course also socket.io but that is for after the setup. Prisma is a tool that provides an easy way of setting up a data schema handy for this small POC.
+The server in this POC will be created with Express and TypeScript because of the straightforward implementation. Other dependencies include JWT for token-based authentication, bcrypt for password hashing and Prisma as ORM. Prisma is a tool that provides an easy way of setting up a data schema.
 
 \begin{lstlisting}[caption=Prisma Data Schema]
   model User {
@@ -54,26 +54,10 @@ The server in this POC will be created with Express and TypeScript because of th
     users User[]
     board Task[]
   }
-
-  model Task {
-    id      Int       @id @default(autoincrement())
-    title   String
-    status  String
-    board   Workspace @relation(fields: [boardId], references: [name])
-    boardId String
-  }
+  ...
 \end{lstlisting}
 
-Just like users the tasks on the status board will be stored in a relational database. The objects on the design make more sense to store in a document store like MongoDB.
-
-Routes for authentication delegating to the UserController:
-
-\begin{lstlisting}[caption=Authentication routes]
-  router.post("/register", UserController.register);
-  router.post("/login", UserController.login);
-\end{lstlisting}
-
-Now after login and register HTTP routes to our server we can provide an authMiddleware to continue with the setup. These users now need a way of defining how to collaborate. In collaborative features end users don't just work with anybody, they choose who has access to their workspace. The final step of the setup is providing the users with these workspaces which can already be seen in the schema.
+After login and register HTTP routes to our server an authMiddleware is added to finalise the authentication. These users now need a way of defining how to collaborate. In collaborative features end users don't just work with anybody, they choose who has access to their workspace. The final step of the setup is providing the users with these workspaces which can already be seen in the schema, see Listing 5.
 
 \begin{lstlisting}[caption=WorkspaceController]
   export class WorkspaceController {
@@ -105,7 +89,7 @@ Now after login and register HTTP routes to our server we can provide an authMid
 
 \textbf{Feature 1: Task status board}
 
-The first step is creating the server using Socket.IO, which can use the same host as the HTTP endpoints already created. This is because a WebSocket connection handshake uses HTTP to be established and after the data will be transmitted over the WebSocket protocol. Each incoming socket connection on the server triggers the 'connection' event which provides a socket bound to a client. This socket can then be used to listen to their personal incoming events. Because not all users need to receive the events from each other, but only the users in a workspace together, Socket.IO has a feature to let sockets (clients) join a room. This provides a way for the server to only send incoming client data to the other users in that client's room (workspace). This is a perfect example of what Socket.IO can bring to the table, something maybe not hard to implement but nice to have out of the box.
+The initial step involves setting up the server using Socket.IO, which can utilize the same host as the existing HTTP endpoints. This integration is possible because the WebSocket connection handshake leverages HTTP for establishment, see 2.1.4 WebSocket fundamentals. Upon each incoming socket connection to the server, the 'connection' event is triggered, creating a socket bound to a specific client. This socket enables listening to the client's individual incoming events. Given that not all users need to receive events from every other user but only from those within the same workspace, Socket.IO offers a feature enabling sockets (clients) to join a certain room. Then the server can selectively relay incoming client data only to other users within the same room (workspace) \cite{socketio}. This capability showcases what Socket.IO brings to the table, while not complex to implement, it offers convenient out-of-the-box functionality.
 
 Using the socket it is easy to define all incoming events in a scalable way. Creating a task and updating a task must be sent to the other clients.
 
@@ -163,12 +147,7 @@ Using the socket it is easy to define all incoming events in a scalable way. Cre
   };
 \end{lstlisting}
 
-Important to note that the WebSocket connection is authenticated with the same token. Providing that token in the handshake is also something Socket.IO supports out of the box. Because the native WebSocket API does not support passing authentication headers this is very handy. The other options could be sending the token with a query parameter which is a security concern by itself or using cookie based authentication since the connection is initialised using HTTP. Decided to not think about authorization in this POC since there is no security concern within this project and it is not hard to implement just time consuming.
-
-\begin{lstlisting}[caption=Using Middleware]
-  io.use(authenticateSocket);
-  eventHandler(io);
-\end{lstlisting}
+It's crucial to highlight that the WebSocket connection undergoes authentication using the same token. Socket.IO seamlessly facilitates passing this token during the handshake \cite{socketio}. This becomes particularly advantageous considering that the native WebSocket API lacks support for passing authentication headers. Alternatives, such as transmitting the token via query parameters pose security risks. Notably, authorization considerations were omitted in this proof of concept (POC), as security isn't a concern within the scope. While authorization implementation isn't inherently complex, it's deemed time-intensive and thus ignored in future iterations.
 
 \begin{lstlisting}[caption=Auth Middleware for the socket]
   export const authenticateSocket = async (socket: Socket, next: any) => {
@@ -190,9 +169,9 @@ Important to note that the WebSocket connection is authenticated with the same t
   };
 \end{lstlisting}
 
-Now it is time to use the server in the client to create the real-time task status board. After setting up some basic pages providing a client to login, register, create workspaces and invite other users using the HTTP endpoints, the WebSockets can be implemented. In this POC the JS Framework React will be used with TypeScript because of its use in Teamleader and the broad community support this framework has.
+Now, it's time to integrate the client side to establish the real time task status board. Following the setup of basic pages facilitating user authentication, registration, workspace creation, and user invitation via HTTP endpoints, the WebSocket functionality can be introduced. For this proof of concept (POC), the JavaScript framework React, coupled with TypeScript, will be utilized, given its adoption within Teamleader and the extensive community backing.
 
-Socket.IO provides a client library to connect to the WebSocket. Using the library makes it easy to pass the token in the handshake.
+Socket.IO offers a client library designed to seamlessly connect to the WebSocket server. Leveraging this library simplifies the process of passing the authentication token during the handshake.
 
 \begin{lstlisting}[caption=Using the WebSocket]
   export default function Board() {
@@ -218,7 +197,10 @@ Socket.IO provides a client library to connect to the WebSocket. Using the libra
   }  
 \end{lstlisting}
 
-Because the sockets only send new tasks and updated tasks the persisted data also needs to be loaded on initialisation. This is a perfect example of a HTTP GET request and so there is no reason to do this over the WebSocket. Persisted data will be loaded on page render and after all the newly created tasks or tasks that are updated will be sent over WebSockets to make it in real-time. Another option that makes sense is to send that initial data also over the socket connection, as mentioned it is a perfect example of a HTTP GET request but because sockets are already used it can perfectly make sense.
+Since the sockets exclusively transmit new or updated tasks, the initial loading of persisted data must occur upon initialization. This scenario presents an ideal use case for a GET request, eliminating the necessity for WebSocket involvement. During page rendering, persisted data will be loaded.
+
+Alternatively, an additional approach worth considering involves sending the initial data over the socket connection. While an HTTP GET request perfectly suits this purpose, leveraging sockets for this task remains feasible, particularly considering their existing utilization within the application.
+
 
 \begin{lstlisting}[caption=Loading persisted data]
   useEffect(() => {
@@ -239,7 +221,7 @@ Because the sockets only send new tasks and updated tasks the persisted data als
   }, [name, navigate]);
 \end{lstlisting}
 
-The initial data is set and the WebSocket connection is alive, the next steps consist of listening to events: new task and updated task, and to also emit those events to the server.
+The initial data is set and the WebSocket connection is alive, the next steps consist of listening to events: new task and updated task, and also emitting those events to the server.
 
 \begin{lstlisting}[caption=Listening to events]
   useEffect(() => {
@@ -287,11 +269,11 @@ The initial data is set and the WebSocket connection is alive, the next steps co
   };
 \end{lstlisting}
 
-\textbf{Out of sync data}
+\textbf{Synchronization}
 
-One of the challenges when working with real-time that comes to mind when working out this POC is can data be out of sync? And technically it can, data could have changed while the client was still waiting for that initial request to arrive. There must be a way to keep data in sync, and of course some server side logic with synchronisation requests from clients could fix this. Maybe the better way is to really make sure data can never be out of sync. A fix could be to open the connection before fetching with HTTP and to not let that initial data override the client data but add to it if a task already got added by a socket event. Since synchronisation issues are a big hurdle for this POC it is easier to look at the case study of Figma and how to keep clients in sync, see Appendix A.
+One of the primary challenges encountered when developing this POC is the potential for data desynchronization in real-time interactions. Indeed, it is possible that data alterations may occur while the client awaits the arrival of initial requests. Addressing this issue necessitates implementing server-side logic to manage synchronization requests from clients. However, a more proactive approach involves ensuring data integrity from the start, thereby preemptively reducing desynchronization concerns.
 
-In conclusion, leveraging techniques such as CRDTs, inspired by Figma's innovative approach, can effectively address synchronization challenges in real-time applications.
+One potential solution involves initiating the connection prior to HTTP fetching, thus preempting the possibility of initial data overriding client-side data. Instead, newly arrived data would be added to existing client data, ensuring synchronization. Given the complexity of addressing synchronization challenges in this POC, it would be beneficial to draw insights from the case study of Figma, see Appendix A.
 
 \textbf{Feature 2: Design canvas}
 
@@ -311,9 +293,9 @@ export const cursorHandler = (socket: AuthenticatedSocket, io: Server) => {
 };
 \end{lstlisting}
 
-When the server receives this event it send the data to each other user connected to the room. Important with this feature is that there is no need for persisting this data. When adding real-time objects to the canvas that need to be persisted syncing complexities arise that are discussed in Appendix A.
+Upon receiving this event, the server sends the data to every other user linked to the same room. It's noteworthy that the persistence of this data is unnecessary. However, when incorporating real-time objects onto the canvas necessitating persistence, synchronization complexities emerge, as elaborated in Appendix A.
 
-On the client side the connected users send their cursor location using this event. The clients also listen to the event to show all other clients their cursor in real-time.
+On the client side, each connected user transmits their cursor location through this event. Simultaneously, the clients are listening to the event to display the real-time positions of all other users' cursors.
 
 \begin{lstlisting}[caption=Client sending cursor data to server]
     const handleMouseEnter = (event: MouseEvent) => {
@@ -347,17 +329,17 @@ On the client side the connected users send their cursor location using this eve
   });
 \end{lstlisting}
 
-Finally this position data gets drawn onto the canvas. One realisation when creating this feature is the question if this actually needs to be in perfect real-time all the time? The answer is no, not really. While it has to be in real-time, it is okay to add a buffer to sending cursor positions to the server. This way amount of message the server needs to handle is limited alot by only adding a 100ms buffer. This can cause flickering when receiving these locations client side but that issues can easily be fixed smoothing the movement between each position update. 
+Finally, this positional data is rendered onto the canvas. An important insight learned from crafting this feature is whether it is necessary to have consistently perfect real-time synchronization. The answer is in fact that it is not necessary. While real-time functionality is essential, it is acceptable to introduce a slight buffer when transmitting cursor positions to the server. By implementing e.g. a 100ms buffer, the server's workload is significantly reduced. Admittedly, this approach may induce flickering on the client side upon receiving these location updates. Nevertheless, this issue can be readily addressed by implementing smooth transitions between each position update.
 
 \subsubsection{Server-Sent Events implementation}
 
-Features that can benefit from unidirectional communication, only server to client, are also possible via a WebSocket connection. The reason to opt for Server-Sent Events is its simpler approach. It works well in combination with non long-lived HTTP requests as it can be called through one. There are 2 types of implementation to be discussed: either a client sends data to the server via HTTP POST and that server emits that data to other clients or the server sends an event to the clients basically requesting to send a new GET request. The first type takes less overhead and yet it would make more sense to opt for the second type: asking the client to fetch again will never result in an out of sync issue without any complex implementation. Either way the first type is basically a less performant WebSocket implementation and developers would benefit from using WebSockets from the start for future expansion for features that need bidirectional communication. The second type fits perfectly when converting something into real-time that was not in real-time before or when implementing basic notifications.
+Features that can benefit from unidirectional communication, specifically from server to client, are achievable through WebSocket connections. However, opting for Server-Sent Events offers a simpler approach. Two implementation approaches are up for discussion: firstly, a client sends data to the server via HTTP POST, which the server then broadcasts to other clients; secondly, the server initiates an event to the clients, prompting them to make a new GET request. While the first method obtains less overhead, the second approach proves to be more robust. Requesting clients to fetch again ensures a sync issue-free environment without any extra implementations. Nevertheless, the first method essentially represents a less efficient WebSocket implementation. Developers benefit from embracing WebSockets from the start, particularly for future-proofing feature expansions that demand bidirectional communication. Conversely, the second approach aligns seamlessly with scenarios involving the transition of non-real-time functionalities into real-time capabilities or the implementation of basic notifications.
 
 \textbf{Converting into real-time}
 
-Within the POC there are some places not in real-time because they use normal HTTP requests. For example the homepage shows every workspace an end user is part of but when a user is added to someone's workspace this is not shown in real-time, the user must refresh the webpage. A perfect situation to convert something that is not in real-time to be in real-time since in a lot of projects it doesn't make sense to start rewriting the backend.
+Within the POC there are some places not in real-time because they use normal HTTP requests. For example, the homepage shows every workspace an end user is part of but when a user is added to someone's workspace this is not shown in real-time, the user must refresh the webpage. A perfect situation to convert something that is not in real-time to be in real-time since in a lot of projects it doesn't make sense to start rewriting the backend.
 
-The idea behind SSE is to keep the HTTP connection alive and transmit data over that connection. To emit data from places in the server code EventEmitter is used, something built into Node.js.
+The idea behind SSE is to keep the HTTP connection alive and transmit data over that connection \cite{w3-sse}. To emit data from places in the server code EventEmitter is used, something built into Node.js.
 
 \begin{lstlisting}[caption=]
   router.get("/sse", (req, res) => {
@@ -377,7 +359,7 @@ The idea behind SSE is to keep the HTTP connection alive and transmit data over 
   });
 \end{lstlisting}
 
-The connection is left alive by setting the connection to keep-alive in the header. Content type is set to even-stream so data can be streamed over the connection. Lastly the data sent to the client needs to be in a certain format to define it as SSE:
+The connection is left alive by setting the connection to keep-alive in the header. Content type is set to even-stream so data can be streamed over the connection. Lastly, the data sent to the client needs to be in a certain format to define it as SSE \cite{html-spec-sse}:
 
 Event: eventname\\
 data: "string"
@@ -404,7 +386,7 @@ Now this EventEmitter instance can be used when a client calls the invite endpoi
   }
 \end{lstlisting}
 
-When this is setup the client can use the EventSource API and add EventListners to those custom event names.
+After this setup, the client can use the EventSource API and add EventListeners to those custom event names \cite{w3-sse}.
 
 \begin{lstlisting}[caption=]
   useEffect(() => {
@@ -423,13 +405,13 @@ When this is setup the client can use the EventSource API and add EventListners 
   }, [username]);
 \end{lstlisting}
 
-It's crucial to acknowledge that native Server-Sent Events (SSE) lack support for passing headers, similar to native WebSocket. Because this POC is already set up with token based authentication, changing to cookie based authentication is not an ideal solution. Instead passing the token as a query parameter is possible but not ideal.
+It's crucial to acknowledge that native Server-Sent Events (SSE) lack support for passing headers, similar to native WebSocket. Because this POC is already set up with token-based authentication, changing to cookie-based authentication is not an ideal solution. Instead passing the token as a query parameter is possible but not ideal.
 
 However, it's worth noting that Mercure, as a powerful open-source tool, addresses these authentication limitations by providing robust support for token-based authentication. 
 
 \textbf{Notifications with Mercure}
 
-Finally, Mercure is a solution where the developer doesn't have to deal with any of the real-time server side. This setup is very straightforward. The Mercure Hub server can be created with a simple docker compose. 
+Finally, Mercure is a solution where the developer doesn't have to deal with any of the real-time server side. This setup is very straightforward. The Mercure Hub server can be created with a simple docker compose \cite{mercure}. 
 
 \begin{lstlisting}[caption=docker-compose.yaml for Mercure Hub]
 services:
@@ -459,7 +441,7 @@ volumes:
   mercure_config:
 \end{lstlisting}
 
-Now the server can send POST requests to this hub whenever it wants to. In the following example when a task is created this gets communicated the the Mercure Hub using axios to send a POST request.
+Now the server can send POST requests to this hub whenever it wants to. In the following example when a task is created this gets communicated the Mercure Hub using axios to send a POST request.
 
 \begin{lstlisting}[caption=POST request to the Mercure Hub]
 export const publishNotification = async (topic: string, data: any) => {
@@ -534,7 +516,7 @@ Now the client can listen to the Mercure Hub using Server-Sent Events. Because n
 
 \subsubsection{AsyncAPI Specification}
 
-AsyncAPI is an open-source initiative and specification designed to provide a standardized way to define and document event-driven APIs. Similar to how OpenAPI (formerly known as Swagger) standardizes RESTful APIs, AsyncAPI aims to bring a similar level of standardization and clarity to the world of event-driven and message-driven architectures.
+AsyncAPI is an open-source initiative and specification designed to provide a standardized way to define and document event-driven APIs. Similar to how OpenAPI (formerly known as Swagger) standardizes RESTful APIs, AsyncAPI aims to bring a similar level of standardization and clarity to the world of event-driven and message-driven architectures. \cite{asyncapi}
 
 In the context of WebSockets, AsyncAPI provides a standardized way to describe the communication channels and message exchanges that occur over a WebSocket connection. This can include defining the various events or messages that a client can send to a server and vice versa, along with the structure of these messages.
 
@@ -548,7 +530,7 @@ In the context of WebSockets, AsyncAPI provides a standardized way to describe t
   \item Code Generation
 \end{enumerate}
 
-Consider an example of a WebSocket-based chat application. The following AsyncAPI document describes the API for such an application, where clients can send messages to a chat room and receive messages from other participants.
+Consider an example of a WebSocket-based chat application. The following AsyncAPI document describes the API for such an application, where clients can send messages to a chat room and receive messages from other participants. \cite{asyncapi-docs}
 
 \begin{lstlisting}[caption=EventSource listening to the topic]
 asyncapi: 3.0.0
@@ -609,6 +591,6 @@ In conclusion, implementing real-time features in a web application requires car
 
 Future-proofing the application is crucial; starting with WebSockets provides flexibility for later expansion into features requiring bidirectional communication. This trade-off needs to be considered at the design phase to avoid complexities in future updates.
 
-The Proof of Concept (POC) showcased effective use of WebSockets and SSE, demonstrating their implementation for a task status board and a design canvas, respectively. WebSockets facilitated real-time updates and interactions, while SSE provided a simpler, efficient method for streaming updates to clients without the need for a persistent connection. Additionally, tools like Mercure enhance SSE by offering robust support for token-based authentication and simplifying server-side setup.
+The Proof of Concept (POC) \cite{poc-client} \cite{poc-server} showcased the effective use of WebSockets and SSE, demonstrating their implementation for a task status board and a design canvas, respectively. WebSockets facilitated real-time updates and interactions, while SSE provided a simpler, efficient method for streaming updates to clients without the need for a persistent connection. Additionally, tools like Mercure enhance SSE by offering robust support for token-based authentication and simplifying server-side setup.
 
 Finally, adopting AsyncAPI specifications can standardize documentation and implementation of event-driven APIs, ensuring clarity and interoperability across different components of a real-time web application. By considering these factors and leveraging appropriate technologies, developers can effectively implement and maintain real-time features in their web applications.
